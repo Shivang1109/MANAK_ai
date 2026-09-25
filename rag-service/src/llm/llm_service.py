@@ -37,7 +37,7 @@ class LLMService:
                 from google import genai
                 from google.genai import types
                 
-                api_key = os.getenv('GOOGLE_API_KEY')
+                api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
                 if api_key:
                     self.gemini_client = genai.Client(api_key=api_key)
                     # Use gemini-flash-lite-latest which has 100% uptime and ultra-fast sub-second latency
