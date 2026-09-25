@@ -73,7 +73,7 @@ dist/
 # Database
 *.db
 *.sqlite
-*.sql
+backend-api/schema-fixed.sql
 
 # Data files (large PDFs)
 data-pipeline/data/raw/*.pdf
@@ -117,8 +117,9 @@ temp/
 *.swp
 *~
 
-# Model cache
-models/
+# Model cache (only ML models, not Java packages)
+/models/
+rag-service/models/
 .cache/
 
 # Jupyter
