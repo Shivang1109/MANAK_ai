@@ -1,0 +1,110 @@
+# ManakAI RAG Engine Configuration
+
+# ChromaDB settings
+chromadb:
+  persist_directory: "./data/chromadb"
+  collection_name: "bis_standards"
+  distance_metric: "cosine"
+
+# Embedding model
+embeddings:
+  model: "sentence-transformers/all-MiniLM-L6-v2"
+  # Alternative: "BAAI/bge-small-en-v1.5"
+  device: "cpu"  # cpu, cuda, mps
+  batch_size: 32
+  normalize: true
+
+# Retrieval settings
+retrieval:
+  top_k: 30  # Initial retrieval (ensures smaller standards are surfaced)
+  final_k: 6  # After re-ranking
+  min_similarity: 0.35  # Minimum cosine similarity
+  enable_reranking: true
+  enable_metadata_filtering: true
+
+# Re-ranking
+reranking:
+  model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  enabled: true
+
+# LLM settings
+llm:
+  # ── PRIMARY PROVIDER ──────────────────────────────────────────────────────
+  # Gemini Flash: FREE (60 RPM), requires GOOGLE_API_KEY env variable.
+  # Works locally AND on any deployed server — no Ollama installation needed.
+  #
+  # To use Ollama locally instead, comment the line below and uncomment:
+  #   provider: "ollama"
+  #   model: "llama3.2"
+  # ─────────────────────────────────────────────────────────────────────────
+  provider: "gemini"  # Options: openai, gemini, ollama, anthropic
+  model: "gemini-2.0-flash"  # Free, fast, works on any server
+  temperature: 0.1  # Low temperature for factual responses
+  max_tokens: 1000
+
+  # Provider-specific model names (used when switching providers)
+  models:
+    openai: "gpt-3.5-turbo"
+    openai_advanced: "gpt-4-turbo-preview"
+    anthropic: "claude-3-sonnet-20240229"
+    gemini: "gemini-2.0-flash"          # FREE — recommended for deployment
+    gemini_pro: "gemini-2.0-flash-thinking-exp"  # More capable, still free
+    ollama: "llama3.2"                  # FREE local — for offline development
+    ollama_mistral: "mistral"           # Alternative local model
+
+# Evidence validation
+evidence:
+  min_chunks_required: 1  # Minimum chunks to generate answer
+  confidence_threshold: 0.6  # Below this, system abstains
+  check_relevance: true
+  max_context_length: 4000  # characters
+
+# System prompt
+system_prompt: |
+  You are ManakAI, an AI assistant for Indian Standards (BIS) and certification guidance.
+  
+  CRITICAL RULES:
+  1. Answer ONLY using the supplied BIS context provided below.
+  2. Do NOT invent standards, clause numbers, schemes, or requirements.
+  3. Every factual compliance claim MUST have a citation to the source.
+  4. If the retrieved context is insufficient to answer the question, say:
+     "I don't have sufficient information in the available BIS documents to answer this question accurately."
+  5. Never pretend that an uncertain answer is certain.
+  6. Prefer the latest applicable document when revision information is available.
+  7. Summarize and paraphrase rather than reproducing long passages.
+  8. Clearly distinguish between:
+     - Indian Standard (IS) requirements
+     - Certification requirements
+     - Guidance and recommendations
+  9. Include source metadata (Standard number, Clause, Page) with your answer.
+  10. If multiple interpretations are possible, acknowledge this.
+
+# Citation extraction
+citations:
+  extract_automatically: true
+  require_sources: true
+  format: "structured"  # structured, inline
+
+# Rate limiting
+rate_limit:
+  requests_per_minute: 60
+  requests_per_hour: 500
+
+# Caching
+cache:
+  enabled: true
+  ttl: 3600  # seconds
+
+# Logging
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+  log_file: "rag_service.log"
+
+# API settings
+api:
+  title: "ManakAI RAG Engine"
+  version: "1.0.0"
+  description: "Retrieval-Augmented Generation engine for BIS standards"
+  host: "0.0.0.0"
+  port: 8000

@@ -1,0 +1,103 @@
+# ManakAI Data Pipeline Configuration
+
+# BIS Data Sources
+data_sources:
+  official_bis_portal: "https://www.bis.gov.in"
+  know_your_standard: "https://www.bis.gov.in/know-your-standard/"
+  
+# Industries to focus on for MVP
+target_industries:
+  - electronics
+  - food_packaging
+  - construction
+
+# Document types to collect
+document_types:
+  - indian_standards
+  - product_manuals
+  - certification_guidelines
+  - qco_information
+  - scheme_documents
+  - official_guidance
+
+# PDF Extraction settings
+extraction:
+  ocr_enabled: true
+  ocr_language: "eng+hin"
+  min_text_quality: 0.7
+  detect_tables: true
+  detect_images: false
+
+# Document cleaning
+cleaning:
+  remove_headers_footers: true
+  remove_page_numbers: true
+  normalize_whitespace: true
+  fix_hyphenation: true
+  merge_broken_lines: true
+
+# Chunking strategy
+chunking:
+  strategy: "clause_aware"  # clause_aware, semantic, fixed_size
+  max_chunk_size: 1000  # characters
+  overlap_size: 200
+  respect_boundaries: true  # Don't split clauses/sections
+  
+  # Clause detection patterns
+  clause_patterns:
+    - "^\\d+\\.\\d+\\.?\\d*"  # 4.2.1
+    - "^Clause \\d+"
+    - "^Section \\d+"
+    - "^[A-Z][a-z]+ \\d+"
+
+# Metadata extraction
+metadata:
+  extract_standard_number: true
+  extract_revision_year: true
+  extract_industry: true
+  extract_document_type: true
+  extract_clauses: true
+  extract_tables: false
+  
+  # Standard number patterns
+  standard_patterns:
+    - "IS\\s+\\d+\\s*:?\\s*\\d{4}"  # IS 12345:2025
+    - "IS\\s+\\d+\\s*\\(Part\\s+\\d+\\)"  # IS 12345 (Part 1)
+
+# Embedding configuration
+embeddings:
+  model: "sentence-transformers/all-MiniLM-L6-v2"
+  # Alternative: "BAAI/bge-small-en-v1.5"
+  batch_size: 32
+  device: "cpu"  # cpu, cuda, mps
+  normalize: true
+
+# ChromaDB configuration
+chromadb:
+  persist_directory: "../chromadb_data"
+  collection_name: "bis_standards"
+  distance_metric: "cosine"
+  
+# Data directories
+directories:
+  raw: "data/raw"
+  processed: "data/processed"
+  metadata: "data/metadata"
+  validation: "data/validation"
+  manifests: "data/manifests"
+
+# Validation
+validation:
+  min_chunk_length: 50
+  max_chunk_length: 2000
+  required_metadata_fields:
+    - document_id
+    - standard_number
+    - title
+    - document_type
+  
+# Logging
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+  log_file: "pipeline.log"
