@@ -86,11 +86,11 @@ echo "🚀 [2/3] Starting Spring Boot Backend API on http://localhost:8080..."
 ) &
 BACKEND_PID=$!
 
-# 5. Start Frontend (Port 5173)
-echo "🚀 [3/3] Starting React Frontend on http://localhost:5173..."
+# 5. Start Frontend (Port 5173 - accessible externally via 0.0.0.0)
+echo "🚀 [3/3] Starting React Frontend on http://0.0.0.0:5173..."
 (
     cd "$PROJECT_ROOT/frontend"
-    exec npm run dev
+    exec npm run dev -- --host 0.0.0.0 --port 5173
 ) &
 FRONTEND_PID=$!
 

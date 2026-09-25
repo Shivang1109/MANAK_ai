@@ -9,7 +9,16 @@ import type {
   FeedbackRequest,
 } from '../types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+// Dynamically detect server host (e.g., 5.175.234.133 or localhost)
+const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (typeof window !== 'undefined' && window.location.hostname) {
+    return `${window.location.protocol}//${window.location.hostname}:8080/api`;
+  }
+  return 'http://localhost:8080/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // ── Startup: clear expired tokens before any request fires ───────────────────
 (function clearExpiredToken() {
