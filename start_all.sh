@@ -35,10 +35,23 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # 2. Determine Python 3 executable (check local venv first, then Mac Python, then system python)
 PYTHON_CMD="python3"
-if [ -x "$PROJECT_ROOT/rag-service/venv/bin/python3" ]; then
+if [ -d "$PROJECT_ROOT/rag-service/venv" ] && [ -x "$PROJECT_ROOT/rag-service/venv/bin/python3" ]; then
     PYTHON_CMD="$PROJECT_ROOT/rag-service/venv/bin/python3"
 elif [ -x "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3" ]; then
     PYTHON_CMD="/Library/Frameworks/Python.framework/Versions/3.13/bin/python3"
+else
+    # Check if uvicorn is installed in global python3, if not create venv automatically
+    if ! python3 -c "import uvicorn" 2>/dev/null; then
+        echo "⚠️  uvicorn not found in system python. Setting up venv in rag-service..."
+        python3 -m venv "$PROJECT_ROOT/rag-service/venv" || true
+        if [ -x "$PROJECT_ROOT/rag-service/venv/bin/pip" ]; then
+            "$PROJECT_ROOT/rag-service/venv/bin/pip" install --upgrade pip
+            "$PROJECT_ROOT/rag-service/venv/bin/pip" install -r "$PROJECT_ROOT/rag-service/requirements.txt"
+            PYTHON_CMD="$PROJECT_ROOT/rag-service/venv/bin/python3"
+        else
+            pip3 install uvicorn fastapi pydantic pydantic-settings chromadb google-genai sentence-transformers
+        fi
+    fi
 fi
 
 # 3. Start RAG Service (Port 8000)
