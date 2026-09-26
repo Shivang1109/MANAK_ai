@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/feedback")
-@CrossOrigin(origins = "${manakai.cors.allowed-origins}")
+@CrossOrigin(originPatterns = "${manakai.cors.allowed-origins}")
 public class FeedbackController {
 
     private static final Logger logger = LoggerFactory.getLogger(FeedbackController.class);

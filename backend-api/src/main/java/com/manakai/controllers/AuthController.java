@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "${manakai.cors.allowed-origins}")
+@CrossOrigin(originPatterns = "${manakai.cors.allowed-origins}")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
