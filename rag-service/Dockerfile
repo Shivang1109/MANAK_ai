@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # so container starts immediately without runtime model downloads
 RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; \
     SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2'); \
-    CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')" || true
+    CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')"
 
 # Copy configuration and source code
 COPY config ./config
