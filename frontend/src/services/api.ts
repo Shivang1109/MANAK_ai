@@ -9,7 +9,7 @@ import type {
   FeedbackRequest,
 } from '../types';
 
-// Dynamically detect server host (e.g., 5.175.234.133 or localhost)
+// Dynamically detect server host
 const getApiBaseUrl = () => {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
   if (typeof window !== 'undefined' && window.location.hostname) {
