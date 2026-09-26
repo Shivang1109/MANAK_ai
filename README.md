@@ -2,7 +2,6 @@
 
 <div align="center">
 
-[![Smart India Hackathon 2026](https://img.shields.io/badge/SIH-2026%20Finalist-orange.svg?style=for-the-badge)](https://sih.gov.in)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-manak--ai.duckdns.org-22c55e.svg?style=for-the-badge&logo=googlechrome&logoColor=white)](https://manak-ai.duckdns.org)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2%20(Java%2017)-6DB33F.svg?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109%20(Python%203.11)-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
