@@ -124,3 +124,7 @@ rag-service/models/
 
 # Jupyter
 .ipynb_checkpoints
+
+# Local Presentation Files
+PITCH_VIDEO_SCRIPT.md
+
