@@ -39,6 +39,7 @@ class LLMService:
                 
                 api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
                 if api_key:
+                    self.gemini_client = genai.Client(api_key=api_key)
                     # Use active gemini-3.8-flash for high token capacity and sub-4s latency
                     self.gemini_model_name = 'gemini-3.8-flash'
                     logger.info(f"Google Gemini initialized with model: {self.gemini_model_name}")
