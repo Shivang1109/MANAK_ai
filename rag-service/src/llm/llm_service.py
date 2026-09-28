@@ -7,6 +7,7 @@ Supports: OpenAI, Google Gemini, Ollama (local)
 from typing import List, Dict, Optional
 from loguru import logger
 import os
+import time
 import openai
 from anthropic import Anthropic
 
@@ -40,8 +41,9 @@ class LLMService:
                 api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
                 if api_key:
                     self.gemini_client = genai.Client(api_key=api_key)
-                    # Use active gemini-3.8-flash for high token capacity and sub-4s latency
-                    self.gemini_model_name = 'gemini-3.8-flash'
+                    # Use gemini-3.1-flash-lite for fastest response and lowest demand-spike rate
+                    config_model = self.config.get('model', '')
+                    self.gemini_model_name = config_model if (config_model and 'gemini' in config_model) else 'gemini-3.1-flash-lite'
                     logger.info(f"Google Gemini initialized with model: {self.gemini_model_name}")
                 else:
                     logger.error("GOOGLE_API_KEY not set")
@@ -287,30 +289,55 @@ CONFIDENCE:
             raise
     
     def _generate_gemini(self, prompt: str, history: Optional[List[Dict]] = None) -> str:
-        """Generate response using Google Gemini (google-genai SDK)"""
+        """Generate response using Google Gemini (google-genai SDK) with resilient multi-model fallback"""
         if not hasattr(self, 'gemini_client') or self.gemini_client is None:
             raise RuntimeError(
                 "Gemini client not initialized. Ensure GOOGLE_API_KEY is set in the environment."
             )
-        try:
-            # Combine system prompt with user prompt
-            full_prompt = f"{self.system_prompt}\n\n{prompt}" if self.system_prompt else prompt
 
-            # Generate response using google-genai SDK
-            response = self.gemini_client.models.generate_content(
-                model=self.gemini_model_name,
-                contents=full_prompt,
-                config={
-                    "temperature": self.temperature,
-                    "max_output_tokens": self.max_tokens,
-                }
-            )
+        full_prompt = f"{self.system_prompt}\n\n{prompt}" if self.system_prompt else prompt
 
-            return response.text
-        
-        except Exception as e:
-            logger.error(f"Gemini generation failed: {e}")
-            raise
+        # Candidate models ordered by reliability, speed, and availability
+        candidate_models = [
+            getattr(self, 'gemini_model_name', 'gemini-3.1-flash-lite'),
+            'gemini-3.1-flash-lite',
+            'gemini-3.8-flash',
+            'gemini-flash-lite-latest',
+        ]
+        # Deduplicate preserving order
+        unique_models = []
+        for m in candidate_models:
+            if m and m not in unique_models:
+                unique_models.append(m)
+
+        last_error = None
+        for model_name in unique_models:
+            for attempt in range(2):
+                try:
+                    logger.info(f"Generating content with Gemini model: {model_name} (attempt {attempt + 1})")
+                    response = self.gemini_client.models.generate_content(
+                        model=model_name,
+                        contents=full_prompt,
+                        config={
+                            "temperature": self.temperature,
+                            "max_output_tokens": self.max_tokens,
+                        }
+                    )
+                    if response and response.text:
+                        return response.text
+                except Exception as e:
+                    last_error = e
+                    err_str = str(e)
+                    logger.warning(f"Gemini {model_name} attempt {attempt + 1} failed: {err_str}")
+                    # If high demand (503) or rate limit (429), pause briefly before retry / next candidate
+                    if "503" in err_str or "UNAVAILABLE" in err_str or "429" in err_str:
+                        time.sleep(1.0)
+                    else:
+                        # For other errors (like 404), skip to next candidate immediately
+                        break
+
+        logger.error(f"All Gemini candidate models failed. Last error: {last_error}")
+        raise last_error
     
     def _generate_ollama(self, prompt: str, history: Optional[List[Dict]] = None) -> str:
         """Generate response using Ollama (local)"""

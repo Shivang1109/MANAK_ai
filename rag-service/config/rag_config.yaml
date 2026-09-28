@@ -38,7 +38,7 @@ llm:
   #   model: "llama3.2"
   # ─────────────────────────────────────────────────────────────────────────
   provider: "gemini"  # Options: openai, gemini, ollama, anthropic
-  model: "gemini-3.8-flash"  # Free, fast, active model
+  model: "gemini-3.1-flash-lite"  # Free, sub-second latency, highest availability
   temperature: 0.1  # Low temperature for factual responses
   max_tokens: 1000
 
