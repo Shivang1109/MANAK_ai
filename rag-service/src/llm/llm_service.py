@@ -39,9 +39,8 @@ class LLMService:
                 
                 api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
                 if api_key:
-                    self.gemini_client = genai.Client(api_key=api_key)
-                    # Use gemini-flash-lite-latest which has 100% uptime and ultra-fast sub-second latency
-                    self.gemini_model_name = 'gemini-flash-lite-latest'
+                    # Use official gemini-2.0-flash for high token capacity and sub-4s latency
+                    self.gemini_model_name = self.model or 'gemini-2.0-flash'
                     logger.info(f"Google Gemini initialized with model: {self.gemini_model_name}")
                 else:
                     logger.error("GOOGLE_API_KEY not set")
@@ -143,10 +142,10 @@ class LLMService:
                 "or ensure Ollama is running locally (ollama serve).")
     
     def _build_context(self, chunks: List[Dict]) -> str:
-        """Build context string from retrieved chunks"""
+        """Build context string from top retrieved chunks (capped to top 4 to stay well under token quotas)"""
         context_parts = []
         
-        for i, chunk in enumerate(chunks, 1):
+        for i, chunk in enumerate(chunks[:4], 1):
             metadata = chunk['metadata']
             
             context_part = f"""
@@ -196,7 +195,7 @@ CRITICAL RULES:
    - Bold important terms using **term** syntax
    - Add spacing between sections for readability
 3. Cite sources inline using [Source N, Clause X.Y] format
-4. Start with a brief summary, then provide detailed points
+4. Keep the response crisp, concise, and direct (under 300 words). Focus strictly on key limits and tolerances.
 5. For technical specifications, use clear bullet points
 6. If the context doesn't contain enough information, say so clearly
 7. Include standard numbers prominently
