@@ -293,31 +293,19 @@ CONFIDENCE:
                 "Gemini client not initialized. Ensure GOOGLE_API_KEY is set in the environment."
             )
         try:
-            from google.genai import types
-
             # Combine system prompt with user prompt
             full_prompt = f"{self.system_prompt}\n\n{prompt}" if self.system_prompt else prompt
-            
-            # Disable thinking loop (thinking_budget=0) to achieve fast sub-4s response
-            try:
-                config = types.GenerateContentConfig(
-                    temperature=self.temperature,
-                    max_output_tokens=self.max_tokens,
-                    thinking_config=types.ThinkingConfig(thinking_budget=0)
-                )
-            except Exception:
-                config = types.GenerateContentConfig(
-                    temperature=self.temperature,
-                    max_output_tokens=self.max_tokens
-                )
 
             # Generate response using google-genai SDK
             response = self.gemini_client.models.generate_content(
                 model=self.gemini_model_name,
                 contents=full_prompt,
-                config=config
+                config={
+                    "temperature": self.temperature,
+                    "max_output_tokens": self.max_tokens,
+                }
             )
-            
+
             return response.text
         
         except Exception as e:
