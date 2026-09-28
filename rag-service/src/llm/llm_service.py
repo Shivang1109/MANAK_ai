@@ -39,8 +39,8 @@ class LLMService:
                 
                 api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('GEMINI_API_KEY')
                 if api_key:
-                    # Use official gemini-2.0-flash for high token capacity and sub-4s latency
-                    self.gemini_model_name = self.model or 'gemini-2.0-flash'
+                    # Use active gemini-3.8-flash for high token capacity and sub-4s latency
+                    self.gemini_model_name = 'gemini-3.8-flash'
                     logger.info(f"Google Gemini initialized with model: {self.gemini_model_name}")
                 else:
                     logger.error("GOOGLE_API_KEY not set")
